@@ -38,7 +38,28 @@ namespace ZulrahLearner
         {
             string phasesJson = File.ReadAllText(fileName);
 
-            Phases = phasesJson.Deserialize<List<Phase>>();
+            try
+            {
+                Phases = phasesJson.Deserialize<List<Phase>>();
+            }
+            catch
+            {
+                List<Phase_Old> phasesOld = phasesJson.Deserialize<List<Phase_Old>>();
+                Phases = new List<Phase>();
+
+                foreach(Phase_Old oldPhase in phasesOld)
+                {
+                    Phase phase = oldPhase.ConvertToNewPhase();
+                    Phases.Add(phase);
+                }
+
+                SavePhases(fileName);
+            }
+        }
+
+        private void SavePhases(string fileName)
+        {
+            File.WriteAllText(fileName, Phases.Serialize());
         }
 
         [JsonIgnore]

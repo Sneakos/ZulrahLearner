@@ -2,14 +2,15 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>.\Assets\Images\Zulrah.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedControls\SharedControls.csproj" />
-    <ProjectReference Include="..\Utility\Common.csproj" />
+    <ProjectReference Include="..\..\Library\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Library\SharedControls\SharedControls.csproj" />
+    <ProjectReference Include="..\OSRSGearSetup\OSRSGearSetup.csproj" />
   </ItemGroup>
 
   <ItemGroup>

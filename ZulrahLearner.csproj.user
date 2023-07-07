@@ -4,6 +4,9 @@
     <Compile Update="ZulrahLearner.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="ZulrahLearnerSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="ZulrahPhaseGenerator.cs">
       <SubType>Form</SubType>
     </Compile>

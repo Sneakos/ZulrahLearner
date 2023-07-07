@@ -15,6 +15,7 @@ namespace ZulrahLearner
         List<Block> Blocks;
         BindingList<PhasesStruct> Phases;
         private int _LastIndex = 0;
+        string _mostRecentFileLoadPath;
 
         public ZulrahPhaseGenerator()
         {
@@ -158,13 +159,13 @@ namespace ZulrahLearner
             {
                 if (phase.PlayerBlockIDs.Count > 0)
                 {
-                    txtPlayerBlockIDs1.Text = phase.PlayerBlockIDs[0].ToString();
+                    txtPlayerBlockIDs1.Text = string.Join(",", phase.PlayerBlockIDs[0]);
                     if (phase.PlayerBlockIDs.Count > 1)
                     {
-                        txtPlayerBlockIDs2.Text = phase.PlayerBlockIDs[1].ToString();
+                        txtPlayerBlockIDs2.Text = string.Join(",", phase.PlayerBlockIDs[1]);
                         if (phase.PlayerBlockIDs.Count > 2)
                         {
-                            txtPlayerBlockIDs3.Text = phase.PlayerBlockIDs[2].ToString();
+                            txtPlayerBlockIDs3.Text = string.Join(",", phase.PlayerBlockIDs[2]);
                         }
                     }
                 }
@@ -244,13 +245,26 @@ namespace ZulrahLearner
                 Phases[i].Phase.ZulrahLocationBlockID = 10;
             }
 
-            List<int> pBlockIDs = new List<int>();
+            List<List<int>> pBlockIDs = new List<List<int>>();
 
             if (txtPlayerBlockIDs1.TextLength > 0)
             {
                 try
                 {
-                    pBlockIDs.Add(int.Parse(txtPlayerBlockIDs1.Text));
+                    pBlockIDs.Add(new List<int>());
+
+                    if (txtPlayerBlockIDs1.Text.Contains(","))
+                    {
+                        string[] parts = txtPlayerBlockIDs1.Text.Split(',');
+                        foreach(string part in parts)
+                        {
+                            pBlockIDs.Last().Add(int.Parse(part));
+                        }
+                    }
+                    else
+                    {
+                        pBlockIDs.Last().Add(int.Parse(txtPlayerBlockIDs1.Text));
+                    }
                 }
                 catch
                 {
@@ -262,7 +276,20 @@ namespace ZulrahLearner
             {
                 try
                 {
-                    pBlockIDs.Add(int.Parse(txtPlayerBlockIDs2.Text));
+                    pBlockIDs.Add(new List<int>());
+
+                    if (txtPlayerBlockIDs2.Text.Contains(","))
+                    {
+                        string[] parts = txtPlayerBlockIDs2.Text.Split(',');
+                        foreach (string part in parts)
+                        {
+                            pBlockIDs.Last().Add(int.Parse(part));
+                        }
+                    }
+                    else
+                    {
+                        pBlockIDs.Last().Add(int.Parse(txtPlayerBlockIDs2.Text));
+                    }
                 }
                 catch
                 {
@@ -274,7 +301,20 @@ namespace ZulrahLearner
             {
                 try
                 {
-                    pBlockIDs.Add(int.Parse(txtPlayerBlockIDs3.Text));
+                    pBlockIDs.Add(new List<int>());
+
+                    if (txtPlayerBlockIDs3.Text.Contains(","))
+                    {
+                        string[] parts = txtPlayerBlockIDs3.Text.Split(',');
+                        foreach (string part in parts)
+                        {
+                            pBlockIDs.Last().Add(int.Parse(part));
+                        }
+                    }
+                    else
+                    {
+                        pBlockIDs.Last().Add(int.Parse(txtPlayerBlockIDs3.Text));
+                    }
                 }
                 catch
                 {
@@ -301,6 +341,12 @@ namespace ZulrahLearner
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                _mostRecentFileLoadPath = openFileDialog.FileName;
+
+                string rotationName = _mostRecentFileLoadPath.Split('\\').Last().Replace(".json", "");
+
+                Text = rotationName;
+
                 LoadFromJson(File.ReadAllText(openFileDialog.FileName));
 
                 _LastIndex = 0;
@@ -318,6 +364,19 @@ namespace ZulrahLearner
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (_mostRecentFileLoadPath != "")
+            {
+                _LastIndex = cmbPhases.SelectedIndex;
+
+                SavePhase();
+
+                string jsonString = Phases.Select(x => x.Phase).Serialize();
+
+                File.WriteAllText(_mostRecentFileLoadPath, jsonString);
+
+                return;
+            }
+
             SaveFileDialog saveFileDialog = new();
             saveFileDialog.Title = "Save Rotation JSON File";
             saveFileDialog.Filter = "JSON Files|*.json";

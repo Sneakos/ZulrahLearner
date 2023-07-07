@@ -1,13 +1,15 @@
-﻿namespace ZulrahLearner
-{
-    public class DataFiles
-    {
-        public static string upperDirectory = @"..\..\..\Assets\Data\";
+﻿using OSRSGearSetup;
 
-        public static string RotationA = upperDirectory + "RotationA.json";
-        public static string RotationB = upperDirectory + "RotationB.json";
-        public static string RotationC = upperDirectory + "RotationC.json";
-        public static string RotationD = upperDirectory + "RotationD.json";
-        public static string Blocks = upperDirectory + "Blocks.json";
+namespace ZulrahLearner
+{
+    public class DataFiles : Helper
+    {
+        private static string ZulrahData = @$"{DataPath}ZulrahData\";
+
+        public static string RotationA = @$"{ZulrahData}RotationA.json";
+        public static string RotationB = @$"{ZulrahData}RotationB.json";
+        public static string RotationC = @$"{ZulrahData}RotationC.json";
+        public static string RotationD = @$"{ZulrahData}RotationD.json";        
+        public static string Blocks = @$"{ZulrahData}Blocks.json";
     }
 }

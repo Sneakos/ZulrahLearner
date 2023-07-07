@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Common;
 
 namespace ZulrahLearner
 {
@@ -15,9 +15,9 @@ namespace ZulrahLearner
         private const int PhaseStepSpeed = 100;
         private const int NextPhaseSpeed = 1;
 
-       // private const int PhaseSpeed = 6;
-       // private const int NextPhaseSpeed = 3;
-       // private const int PhaseStepSpeed = 4;
+        // private const int PhaseSpeed = 6;
+        // private const int NextPhaseSpeed = 3;
+        // private const int PhaseStepSpeed = 4;
 
         #endregion Constants
 
@@ -39,8 +39,8 @@ namespace ZulrahLearner
 
             ResizeAllImages();
 
-            pbHelm.Visible = false;
-            pbWeapon.Visible = false;
+            gearScreen.Visible = false;
+            prayerScreen.Visible = false;
 
             cmbPhase.SelectedIndex = 0;
             lblTimeLeft.Text = "";
@@ -51,8 +51,6 @@ namespace ZulrahLearner
                 MaxValue = 10000
             };
 
-            btnClose.FlatAppearance.BorderSize = 0;
-
             InitializeGameState();
 
             LoadBlocks();
@@ -62,20 +60,7 @@ namespace ZulrahLearner
 
         private void InitializeGameState()
         {
-            GameState = new()
-            {
-                CurrentHelm = Helm.Mage,
-                CurrentWeapon = Weapon.Staff,
-                CurrentPrayer = Prayer.None,
-                PointClicked = new Point(-25, -10),
-                CurrentSpeed = PhaseSpeed,
-                CorrectCount = 0,
-                IncorrectCount = 0,
-                PhaseBlock = 0,
-                BlockIDClicked = -1,
-                Correct = false,
-                Debug_mode = false
-            };
+            GameState.Debug_mode = true;
 
             if (GameState.Debug_mode)
             {
@@ -92,7 +77,7 @@ namespace ZulrahLearner
 
         private void SetInformationLabels(bool hasSub)
         {
-            if (cbHideRotationInfo.Checked)
+            if (GameSettings.HideRotation)
             {
                 lblRotation.Text = "";
                 return;
@@ -154,12 +139,7 @@ namespace ZulrahLearner
 
         private void ResizeAllImages()
         {
-            btnClose.Image = btnClose.Image.Resize(btnClose.Size);
-            pbWeapon.Image = pbWeapon.Image.Resize(pbWeapon.Size);
-            pbHelm.Image = pbHelm.Image.Resize(pbHelm.Size);
-            pbMage.Image = pbMage.Image.Resize(pbMage.Size);
-            pbRange.Image = pbRange.Image.Resize(pbRange.Size);
-            pbMelee.Image = pbMelee.Image.Resize(pbMelee.Size);
+
         }
 
         private void DrawBlocks(Graphics g)
@@ -174,7 +154,7 @@ namespace ZulrahLearner
                 point.X = point.X + (size.Width / 3);
                 point.Y = point.Y + (size.Height / 4);
                 string num = block.ID.ToString();
-                Font numFont = new(lblInterface.Font.FontFamily, 14);
+                Font numFont = new(lblTimeLeft.Font.FontFamily, 14);
 
                 g.DrawString(num, numFont, Brushes.White, point);
             }
@@ -187,7 +167,7 @@ namespace ZulrahLearner
         private void InitializeLoadingBar()
         {
             _startTime = DateTime.Now;
-            _endTime = _startTime.AddSeconds(GameState.CurrentSpeed);
+            _endTime = _startTime.AddSeconds(GameSettings.CurrentSpeed);
 
             loadingBar.CurrentValue = 0;
             loadingBar.MaxValue = 10000;
@@ -209,7 +189,7 @@ namespace ZulrahLearner
                 loadingBar.CurrentValue = loadingBar.MaxValue;
             }
 
-            int timeLeft = GameState.CurrentSpeed - ((int)(GameState.CurrentSpeed * percentDiff));
+            int timeLeft = GameSettings.CurrentSpeed - ((int)(GameSettings.CurrentSpeed * percentDiff));
 
             lblTimeLeft.Text = (timeLeft > 9 ? "" : " ") + timeLeft;
 
@@ -251,7 +231,7 @@ namespace ZulrahLearner
             PhaseTimer.Stop();
 
             GameState.PhaseBlock = 0;
-            GameState.CurrentSpeed = PhaseSpeed;
+            GameSettings.CurrentSpeed = PhaseSpeed;
 
             if (GameState.Correct)
             {
@@ -275,7 +255,7 @@ namespace ZulrahLearner
                 loadingBar.Refresh();
                 lblRotation.Text = "Rotation Complete";
 
-                if (cbLoop.Checked)
+                if (GameSettings.Loop)
                 {
                     SetRotation();
 
@@ -307,7 +287,7 @@ namespace ZulrahLearner
             PhaseTimer.Tick -= PhaseTimer_TickUp;
             PhaseTimer.Tick += PhaseTimer_TickDown;
 
-            GameState.CurrentSpeed = NextPhaseSpeed;
+            GameSettings.CurrentSpeed = NextPhaseSpeed;
 
             loadingBar.BackColor = Color.Blue;
             pbZulrah.Visible = false;
@@ -321,7 +301,7 @@ namespace ZulrahLearner
         {
             PhaseTimer.Stop();
 
-            GameState.CurrentSpeed = PhaseSpeed;
+            GameSettings.CurrentSpeed = PhaseSpeed;
             GameState.ShowCorrectSquare = false;
 
             InitializeLoadingBar();
@@ -350,18 +330,13 @@ namespace ZulrahLearner
 
             GameState.PhaseBlock++;
 
-            GameState.CurrentSpeed = PhaseStepSpeed;
+            GameSettings.CurrentSpeed = PhaseStepSpeed;
 
             SetInformationLabels(true);
 
             InitializeLoadingBar();
 
             PhaseTimer.Start();
-
-            if (GameState.Debug_mode)
-            {
-                Refresh();
-            }
         }
 
         private void FailPhase()
@@ -390,7 +365,7 @@ namespace ZulrahLearner
                 GameState.CurrentHelm == phase.Helm &&
                 cbJadPhase.Checked == phase.JadPhase)
             {
-                if (phase.PlayerBlockIDs[GameState.PhaseBlock] == GameState.BlockIDClicked)
+                if (GameState.CorrectSpotClicked)
                 {
                     if (GameState.PhaseBlock < phase.PlayerBlockIDs.Count - 1)
                     {
@@ -427,16 +402,16 @@ namespace ZulrahLearner
         {
             if (GameState.CurrentPrayer == Prayer.Mage)
             {
-                pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
+                // pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
                 GameState.CurrentPrayer = Prayer.None;
             }
             else
             {
-                pbMage.Image = Images.MagePrayerOn.Resize(pbMage.Size);
+                //  pbMage.Image = Images.MagePrayerOn.Resize(pbMage.Size);
                 GameState.CurrentPrayer = Prayer.Mage;
 
-                pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
-                pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
+                //pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
+                // pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
             }
         }
 
@@ -444,16 +419,16 @@ namespace ZulrahLearner
         {
             if (GameState.CurrentPrayer == Prayer.Range)
             {
-                pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
+                //pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
                 GameState.CurrentPrayer = Prayer.None;
             }
             else
             {
-                pbRange.Image = Images.RangePrayerOn.Resize(pbRange.Size);
+                //pbRange.Image = Images.RangePrayerOn.Resize(pbRange.Size);
                 GameState.CurrentPrayer = Prayer.Range;
 
-                pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
-                pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
+                //pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
+                // pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
             }
         }
 
@@ -461,16 +436,16 @@ namespace ZulrahLearner
         {
             if (GameState.CurrentPrayer == Prayer.Melee)
             {
-                pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
+                //pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
                 GameState.CurrentPrayer = Prayer.None;
             }
             else
             {
-                pbMelee.Image = Images.MeleePrayerOn.Resize(pbMelee.Size);
+                //pbMelee.Image = Images.MeleePrayerOn.Resize(pbMelee.Size);
                 GameState.CurrentPrayer = Prayer.Melee;
 
-                pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
-                pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
+                // pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
+                //pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
             }
         }
 
@@ -478,12 +453,12 @@ namespace ZulrahLearner
         {
             if (GameState.CurrentWeapon == Weapon.Crossbow)
             {
-                pbWeapon.Image = Images.Crossbow.Resize(pbWeapon.Size);
+                //pbWeapon.Image = Images.Crossbow.Resize(pbWeapon.Size);
                 GameState.CurrentWeapon = Weapon.Staff;
             }
             else
             {
-                pbWeapon.Image = Images.Staff.Resize(pbWeapon.Size);
+                //pbWeapon.Image = Images.Staff.Resize(pbWeapon.Size);
                 GameState.CurrentWeapon = Weapon.Crossbow;
             }
         }
@@ -492,12 +467,12 @@ namespace ZulrahLearner
         {
             if (GameState.CurrentHelm == Helm.Range)
             {
-                pbHelm.Image = Images.RangeHelm.Resize(pbHelm.Size);
+                //pbHelm.Image = Images.RangeHelm.Resize(pbHelm.Size);
                 GameState.CurrentHelm = Helm.Mage;
             }
             else
             {
-                pbHelm.Image = Images.MageHelm.Resize(pbHelm.Size);
+                //pbHelm.Image = Images.MageHelm.Resize(pbHelm.Size);
                 GameState.CurrentHelm = Helm.Range;
             }
         }
@@ -517,28 +492,44 @@ namespace ZulrahLearner
                 return;
 
             GameState.PointClicked = new Point(e.Location.X - 10, e.Location.Y - 5);
+            GameState.CorrectSpotClicked = false;
 
-            int correctBlockID = Rotation.CurrentPhase.PlayerBlockIDs[GameState.PhaseBlock];
+            List<int> correctBlockIDs = Rotation.CurrentPhase.PlayerBlockIDs[GameState.PhaseBlock];
 
-            Rectangle blockRectangle = new(Blocks[correctBlockID].Point, Blocks[correctBlockID].Size);
-
-            if (blockRectangle.Contains(e.Location))
+            foreach (int blockID in correctBlockIDs)
             {
-                GameState.BlockIDClicked = correctBlockID;
-                pbZulrahShrine.Refresh();
+                Rectangle blockRectangle = new(Blocks[blockID].Point, Blocks[blockID].Size);
+
+                if (blockRectangle.Contains(e.Location))
+                {
+                    GameState.CorrectSpotClicked = true;
+                }
             }
-            else
-            {
-                GameState.BlockIDClicked = -1;
-                pbZulrahShrine.Refresh();
-            }
+
+            pbZulrahShrine.Refresh();
         }
 
         private void pbZulrahShrine_Paint(object sender, PaintEventArgs e)
         {
             if (GameState.Debug_mode)
             {
-                foreach (int blockID in Rotation.CurrentPhase.PlayerBlockIDs)
+                if (Rotation != null)
+                {
+                    foreach (int blockID in Rotation.CurrentPhase.PlayerBlockIDs[GameState.PhaseBlock])
+                    {
+                        Point playerPoint = Blocks[blockID].Point;
+                        Size playerSize = Blocks[blockID].Size;
+
+                        e.Graphics.DrawRectangle(Pens.White, new Rectangle(playerPoint, playerSize));
+                    }
+                }
+            }
+
+            if (GameState.ShowCorrectSquare)
+            {
+                Phase currentPhase = Rotation.CurrentPhase;
+
+                foreach (int blockID in currentPhase.PlayerBlockIDs[GameState.PhaseBlock])
                 {
                     Point playerPoint = Blocks[blockID].Point;
                     Size playerSize = Blocks[blockID].Size;
@@ -547,17 +538,7 @@ namespace ZulrahLearner
                 }
             }
 
-            if (GameState.ShowCorrectSquare)
-            {
-                Phase currentPhase = Rotation.CurrentPhase;
-
-                Point playerPoint = Blocks[currentPhase.PlayerBlockIDs[GameState.PhaseBlock]].Point;
-                Size playerSize = Blocks[currentPhase.PlayerBlockIDs[GameState.PhaseBlock]].Size;
-
-                e.Graphics.DrawRectangle(Pens.White, new Rectangle(playerPoint, playerSize));
-            }
-
-            Font font = new(lblInterface.Font.FontFamily, 14);
+            Font font = new(lblTimeLeft.Font.FontFamily, 14);
             e.Graphics.DrawString("X", font, Brushes.Yellow, GameState.PointClicked);
 
             //DrawBlocks(e.Graphics);
@@ -567,27 +548,27 @@ namespace ZulrahLearner
         {
             if (keyData == Keys.Escape) //Inventory
             {
-                pbHelm.Visible = true;
-                pbWeapon.Visible = true;
+                //pbHelm.Visible = true;
+                //pbWeapon.Visible = true;
 
-                pbMage.Visible = false;
-                pbRange.Visible = false;
-                pbMelee.Visible = false;
+                //pbMage.Visible = false;
+                //pbRange.Visible = false;
+                //pbMelee.Visible = false;
 
-                lblInterface.Text = "Inventory";
+                //lblInterface.Text = "Inventory";
 
                 return true;
             }
             else if (keyData == Keys.F5) //Prayer
             {
-                pbHelm.Visible = false;
-                pbWeapon.Visible = false;
+                //pbHelm.Visible = false;
+                //pbWeapon.Visible = false;
 
-                pbMage.Visible = true;
-                pbRange.Visible = true;
-                pbMelee.Visible = true;
+                //pbMage.Visible = true;
+                //pbRange.Visible = true;
+                //pbMelee.Visible = true;
 
-                lblInterface.Text = " Prayers";
+                //lblInterface.Text = " Prayers";
 
                 return true;
             }
@@ -636,13 +617,6 @@ namespace ZulrahLearner
 
             btnStart.Text = "Restart";
 
-            pbMage.Image = Images.MagePrayerOff.Resize(pbMage.Size);
-            pbRange.Image = Images.RangePrayerOff.Resize(pbRange.Size);
-            pbMelee.Image = Images.MeleePrayerOff.Resize(pbMelee.Size);
-
-            pbHelm.Image = Images.RangeHelm.Resize(pbHelm.Size);
-            pbWeapon.Image = Images.Crossbow.Resize(pbWeapon.Size);
-
             loadingBar.BackColor = Color.FromArgb(46, 252, 56);
             PhaseTimer.Tick -= PhaseTimer_TickDown;
             PhaseTimer.Tick -= PhaseTimer_TickUp;
@@ -680,6 +654,18 @@ namespace ZulrahLearner
             ResetGame();
         }
 
+        private void cmbPhase_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbPhase.SelectedIndex == 4) //random
+            {
+                GameSettings.HideRotation = true;
+            }
+            else
+            {
+                GameSettings.HideRotation = false;
+            }
+        }
+
         private void PhaseTimer_TickDown(object sender, EventArgs e)
         {
             if (DateTime.Now >= _endTime)
@@ -695,5 +681,17 @@ namespace ZulrahLearner
         #endregion Timer Events
 
         #endregion Events
+
+        private void Zulrah_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ZulrahLearnerSettings settings = new ZulrahLearnerSettings();
+
+            settings.ShowDialog();
+        }
     }
 }

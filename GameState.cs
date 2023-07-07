@@ -4,21 +4,20 @@ namespace ZulrahLearner
 {
     public class GameState
     {
+        public static bool Debug_mode { get; set; } = false;
+        public static bool ShowGridLines { get; set; } = false;
+        public static bool Correct { get; set; } = false;
+        public static bool ShowCorrectSquare { get; set; } = false;
 
-        public bool Debug_mode { get; set; }
-        public bool Correct { get; set; }
-        public bool ShowCorrectSquare { get; set; }
+        public static bool CorrectSpotClicked { get; set; } = false;
+        public static int PhaseBlock { get; set; } = 0;
+        public static int CorrectCount { get; set; } = 0;
+        public static int IncorrectCount { get; set; } = 0;
 
-        public int BlockIDClicked { get; set; }
-        public int PhaseBlock { get; set; }
-        public int CorrectCount { get; set; }
-        public int IncorrectCount { get; set; }
-        public int CurrentSpeed { get; set; }
+        public static Point PointClicked { get; set; } = new Point(-25, -10);
 
-        public Point PointClicked { get; set; }
-
-        public Prayer CurrentPrayer { get; set; }
-        public Weapon CurrentWeapon { get; set; }
-        public Helm CurrentHelm { get; set; }
+        public static Prayer CurrentPrayer { get; set; } = Prayer.None;
+        public static Weapon CurrentWeapon { get; set; } = Weapon.Staff;
+        public static Helm CurrentHelm { get; set; } = Helm.Mage;
     }
 }
